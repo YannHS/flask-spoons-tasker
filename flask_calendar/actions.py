@@ -14,6 +14,9 @@ from flask_calendar.app_utils import (
     new_session_id,
     next_month_link,
     previous_month_link,
+    parse_iso_date,
+    prepare_week_days,
+    start_of_week,
 )
 from flask_calendar.authentication import Authentication
 from flask_calendar.calendar_data import CalendarData
@@ -245,7 +248,7 @@ def update_task_action(calendar_id: str, year: str, month: str, day: str, task_i
     is_all_day = request.form.get("is_all_day", "0") == "1"
     start_time = request.form["start_time"]
     end_time = request.form.get("end_time", None)
-    details = request.form["details"].replace("\r", "").replace("\n", "<br>")
+    details = ""
     color = request.form["color"]
     has_repetition = request.form.get("repeats", "0") == "1"
     repetition_type = request.form.get("repetition_type", "")
@@ -303,7 +306,7 @@ def save_task_action(calendar_id: str) -> Response:
     is_all_day = request.form.get("is_all_day", "0") == "1"
     start_time = request.form["start_time"]
     end_time = request.form.get("end_time", None)
-    details = request.form["details"].replace("\r", "").replace("\n", "<br>")
+    details = ""
     color = request.form["color"]
     has_repetition = request.form.get("repeats", "0") == "1"
     repetition_type = request.form.get("repetition_type")
@@ -406,3 +409,102 @@ def hide_repetition_task_instance_action(calendar_id: str, year: str, month: str
     )
 
     return cast(Response, jsonify({}))
+
+@authenticated
+@authorized
+def weekly_calendar_action(calendar_id: str):
+    """Display seven days on an hourly calendar grid."""
+    today = date.today()
+
+    current_day, current_month, current_year = GregorianCalendar.current_date()
+    year = int(request.args.get("y", current_year))
+    year = max(min(year, current_app.config["MAX_YEAR"]), current_app.config["MIN_YEAR"])
+    month = int(request.args.get("m", current_month))
+    month = max(min(month, 12), 1)
+
+    selected_date = parse_iso_date(
+        request.args.get("date"),
+        default=today,
+    )
+
+    first_weekday = current_app.config["WEEK_STARTING_DAY"]
+    week_start = start_of_week(selected_date, first_weekday)
+    week_end = week_start + timedelta(days=6)
+
+    calendar_data = CalendarData(
+        data_folder=current_app.config["DATA_FOLDER"],
+        first_weekday=first_weekday,
+    )
+    data = calendar_data.load_calendar(calendar_id)
+    tasks = calendar_data.tasks_for_week(week_start, data)
+
+    start_hour = current_app.config["WEEK_VIEW_START_HOUR"]
+    end_hour = current_app.config["WEEK_VIEW_END_HOUR"]
+    hour_height = current_app.config["WEEK_VIEW_HOUR_HEIGHT"]
+
+    week_days = prepare_week_days(
+        week_start=week_start,
+        tasks=tasks,
+        start_hour=start_hour,
+        end_hour=end_hour,
+        hour_height=hour_height,
+        minimum_task_minutes=current_app.config[
+            "WEEK_VIEW_MIN_TASK_MINUTES"
+        ],
+    )
+
+    previous_week = week_start - timedelta(days=7)
+    next_week = week_start + timedelta(days=7)
+
+    return render_template(
+        "week.html",
+        calendar_id=calendar_id,
+        year=year,
+        month=month,
+        week_start=week_start,
+        week_end=week_end,
+        week_days=week_days,
+        today=today,
+        previous_week=previous_week.isoformat(),
+        next_week=next_week.isoformat(),
+        start_hour=start_hour,
+        end_hour=end_hour,
+        hours=range(start_hour, end_hour),
+        hour_height=hour_height,
+        grid_height=(end_hour - start_hour) * hour_height,
+    )
+
+@authenticated
+@authorized
+def settings_action(calendar_id: str):
+    """displays the settings page"""
+    today = date.today()
+
+    current_day, current_month, current_year = GregorianCalendar.current_date()
+    year = int(request.args.get("y", current_year))
+    year = max(min(year, current_app.config["MAX_YEAR"]), current_app.config["MIN_YEAR"])
+    month = int(request.args.get("m", current_month))
+    month = max(min(month, 12), 1)
+
+    selected_date = parse_iso_date(
+        request.args.get("date"),
+        default=today,
+    )
+
+    first_weekday = current_app.config["WEEK_STARTING_DAY"]
+    week_start = start_of_week(selected_date, first_weekday)
+    week_end = week_start + timedelta(days=6)
+
+    calendar_data = CalendarData(
+        data_folder=current_app.config["DATA_FOLDER"],
+        first_weekday=first_weekday,
+    )
+    data = calendar_data.load_calendar(calendar_id)
+    tasks = calendar_data.tasks_for_week(week_start, data)
+
+    previous_week = week_start - timedelta(days=7)
+    next_week = week_start + timedelta(days=7)
+
+    return render_template(
+        "settings.html",
+    )

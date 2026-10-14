@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Settings</title>
+</head>
+<body>
+<form autocomplete="off" method="POST" action="{{ base_url }}/{{ calendar_id }}/new_task">
+<label for="day_start">Select a day start time:</label>
+<input type="time" id="day_start" name="appt">
+<br/>
+
+<label for="day_end">Select a day end time:</label>
+<input type="time" id="day_end" name="appt">
+<br/>
+
+<label for="week_start">Choose a week start day:</label>
+
+<select name="week_start" id="week_start">
+  <option value="saturday">Saturday</option>
+  <option value="sunday">Sunday</option>
+  <option value="monday">Monday</option>
+</select>
+    <br/>
+    <label for="rest">Rest period between repeated tasks</label>
+    <input type="number" id="rest" name="rest"><br>
+
+    <label for="week_start">Choose a preferred time of day for tasks: </label>
+
+<select name="heavy_period" id="heavy_period">
+  <option value="morning">morning</option>
+  <option value="afternoon">afternoon</option>
+  <option value="evening">evening</option>
+</select>
+    <br/>
+<input class="form-button" type="submit" value="Save" />
+
+<input class="form-button" type="button" value="Cancel" onclick="window.history.go(-1); return false;" />
+</form>
+</body>
+</html>

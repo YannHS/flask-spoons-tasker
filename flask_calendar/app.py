@@ -19,6 +19,8 @@ from flask_calendar.actions import (
     save_task_action,
     update_task_action,
     update_task_day_action,
+    weekly_calendar_action,
+    settings_action,
 )
 from flask_calendar.app_utils import task_details_for_markup
 
@@ -90,6 +92,18 @@ def create_app(config_overrides: Optional[Dict] = None) -> Flask:
         "hide_repetition_task_instance_action",
         hide_repetition_task_instance_action,
         methods=["POST"],
+    )
+    app.add_url_rule(
+        "/<calendar_id>/week/",
+        "weekly_calendar_action",
+        weekly_calendar_action,
+        methods=["GET"],
+    )
+    app.add_url_rule(
+        "/<calendar_id>/settings/",
+        "settings_action",
+        settings_action,
+        methods=["GET"],
     )
 
     app.jinja_env.filters["task_details_for_markup"] = task_details_for_markup

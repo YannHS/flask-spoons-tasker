@@ -1,6 +1,6 @@
 body {
     font-family: Roboto, Helvetica, Arial, sans-serif;
-    font-size: 1em/1.4;
+    font-size: 1em;
     color: #222;
     background-color: #FCFCFC;
 }
@@ -71,6 +71,10 @@ li {
 }
 
 .toggle-past-events {
+    float: right;
+}
+
+.enter-settings {
     float: right;
 }
 
@@ -194,7 +198,7 @@ span.daynumber-current {
 
 ul.tasks {
     font-weight: 400;
-    font-size: 12px;
+    font-size: 1em;
     margin: 1px;
     margin-top: 3px;
     padding: 0;
@@ -288,5 +292,202 @@ ul.tasks li a {
         min-width: 8px;
         text-align: center;
         min-height: 8px;
+    }
+}
+
+.week-header {
+    align-items: center;
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.week-header .back-to-current {
+    font-size: 1em;
+}
+
+.view-link {
+    color: #444;
+    font-weight: 700;
+    margin-left: auto;
+}
+
+.week-scroll {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.week-view {
+    display: grid;
+    grid-template-columns: 72px repeat(7, minmax(130px, 1fr));
+    min-width: 1050px;
+}
+
+.week-corner,
+.week-day-heading,
+.all-day-label,
+.all-day-column {
+    background: #f6f6f6;
+    border-right: 1px solid #dadce0;
+    border-top: 1px solid #dadce0;
+    box-sizing: border-box;
+}
+
+.week-corner {
+    border-left: 1px solid #dadce0;
+}
+
+.week-day-heading {
+    padding: 7px 4px;
+    text-align: center;
+}
+
+.week-day-name {
+    color: #666;
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.week-day-number {
+    color: #444;
+    display: inline-block;
+    font-size: 18px;
+    line-height: 28px;
+    margin-top: 2px;
+    min-width: 28px;
+}
+
+.week-day-number-current {
+    background: #3eb34f;
+    border-radius: 50%;
+    color: #fff;
+    font-weight: 700;
+}
+
+.all-day-label {
+    align-items: center;
+    border-left: 1px solid #dadce0;
+    color: #666;
+    display: flex;
+    font-size: 11px;
+    justify-content: flex-end;
+    min-height: 34px;
+    padding: 4px 7px;
+}
+
+.all-day-column {
+    min-height: 34px;
+    padding: 3px;
+}
+
+.week-all-day-task {
+    border-radius: 2px;
+    color: #fff;
+    display: block;
+    font-size: 12px;
+    margin-bottom: 2px;
+    overflow: hidden;
+    padding: 2px 4px;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.time-scale {
+    border-bottom: 1px solid #dadce0;
+    border-left: 1px solid #dadce0;
+    box-sizing: border-box;
+}
+
+.time-label {
+    border-top: 1px solid #dadce0;
+    box-sizing: border-box;
+    color: #666;
+    font-size: 10px;
+    position: relative;
+    text-align: right;
+}
+
+.time-label span {
+    background: #fcfcfc;
+    padding: 0 5px;
+    position: relative;
+    top: -7px;
+}
+
+.week-day-column {
+    background-color: #fff;
+    border-bottom: 1px solid #dadce0;
+    border-right: 1px solid #dadce0;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.week-hour-line {
+    border-top: 1px solid #dadce0;
+    left: 0;
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+}
+
+.week-task {
+    border-left: 4px solid rgba(0, 0, 0, 0.22);
+    border-radius: 3px;
+    box-sizing: border-box;
+    color: #fff;
+    left: 3px;
+    overflow: hidden;
+    padding: 3px 5px;
+    position: absolute;
+    right: 3px;
+    text-decoration: none;
+    z-index: 1;
+}
+
+.week-task:hover,
+.week-all-day-task:hover {
+    filter: brightness(0.92);
+}
+
+.week-task-time {
+    display: block;
+    font-size: 10px;
+    opacity: 0.9;
+}
+
+.week-task-title {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.week-task-details {
+    display: block;
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+.week-task-details a {
+    color: #fff;
+}
+
+@media screen and (max-width: 650px) {
+    .week-header {
+        flex-wrap: wrap;
+    }
+
+    .week-header .current-date {
+        font-size: 1em;
+    }
+
+    .view-link {
+        margin-left: 0;
+    }
+
+    .week-view {
+        grid-template-columns: 54px repeat(7, 120px);
+        min-width: 894px;
     }
 }

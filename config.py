@@ -3,16 +3,23 @@ import flask_calendar.constants as constants
 DEBUG = True
 DATA_FOLDER = "data"
 USERS_DATA_FOLDER = "users"
-BASE_URL = "http://0.0.0.0:5000"
+BASE_URL = "http://127.0.0.1:5000"
 MIN_YEAR = 2017
 MAX_YEAR = 2200
 PASSWORD_SALT = "something random and full of non-standard characters"
-HOST_IP = "0.0.0.0"  # set to None for production
+HOST_IP = "127.0.0.1"  # set to None for production
 LOCALE = "en_US.UTF-8"
 # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 TIMEZONE = "US/Central"
 
 WEEK_STARTING_DAY = constants.WEEK_START_DAY_MONDAY
+
+WEEK_VIEW_START_HOUR = 8
+WEEK_VIEW_END_HOUR = 21
+
+WEEK_VIEW_HOUR_HEIGHT = 60
+
+WEEK_VIEW_MIN_TASK_MINUTES = 30
 
 MONTHS_TO_EXPORT = 6  # currently only used for ICS export
 
@@ -37,36 +44,14 @@ COOKIE_HTTPS_ONLY = False
 COOKIE_SAMESITE_POLICY = "Lax"
 
 # If to render emoji buttons at the task create/edit page
-EMOJIS_ENABLED = True
+EMOJIS_ENABLED = False
 
 # Colors for new task buttons
 BUTTON_CUSTOM_COLOR_VALUE = "#3EB34F"
 BUTTONS_COLORS_LIST = (
     ("#FF4848", "Red"),
-    ("#3EB34F", "Green"),
-    ("#2966B8", "Blue"),
-    ("#808080", "Grey"),
-    ("#B05F3C", "Brown"),
-    ("#9588EC", "Purple"),
     ("#F2981A", "Orange"),
-    ("#3D3D3D", "Black"),
-)
-# Emojis for new task buttons
-BUTTONS_EMOJIS_LIST = (
-    "💬",
-    "📞",
-    "🍔",
-    "🍺",
-    "📽️",
-    "🎂",
-    "🏖️",
-    "💻",
-    "📔",
-    "✂️",
-    "🚂",
-    "🏡",
-    "🐶",
-    "🐱",
+    ("#3EB34F", "Green"),
 )
 
 # percent of chance to do a GC-like sweep on save and clean empty and/or past hidden entries.

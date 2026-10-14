@@ -1,0 +1,195 @@
+<head>
+    <meta charset="utf-8">
+    <title>Calendar</title>
+    <link rel="stylesheet" href="{{ url_for("static", filename="style.css") }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ url_for("static", filename="") }}favicon_{{ current_day }}.png" id="favicon">
+    <meta name="viewport" content="width=400" />
+</head>
+<body>
+    <div id="statusbar">Processing...</div>
+
+    <header class="header week-header">
+         <input type="button" class="header-button" value="+"
+            onclick="window.location='/{{ calendar_id }}/{{ year }}/{{ month}}/new_task'" title="New task" />
+
+        <a
+            class="button header-button"
+            href="{{ url_for(
+                'weekly_calendar_action',
+                calendar_id=calendar_id,
+                date=previous_week
+            ) }}"
+            aria-label="Previous week"
+        >
+            &lsaquo;
+        </a>
+
+        <span class="current-date">
+            {{ week_start.strftime("%B %-d") }}
+            &ndash;
+            {{ week_end.strftime("%B %-d, %Y") }}
+        </span>
+
+        <a
+            class="button header-button"
+            href="{{ url_for(
+                'weekly_calendar_action',
+                calendar_id=calendar_id,
+                date=next_week
+            ) }}"
+            aria-label="Next week"
+        >
+            &rsaquo;
+        </a>
+
+        <a
+            class="back-to-current"
+            href="{{ url_for(
+                'weekly_calendar_action',
+                calendar_id=calendar_id
+            ) }}"
+        >
+            Current week
+        </a>
+
+        <a
+            class="view-link"
+            href="{{ url_for(
+                'main_calendar_action',
+                calendar_id=calendar_id,
+                y=week_start.year,
+                m=week_start.month
+            ) }}"
+        >
+            Month
+        </a>
+    </header>
+
+    <div class="week-scroll">
+        <div
+            class="week-view"
+            style="
+                --hour-height: {{ hour_height }}px;
+                --grid-height: {{ grid_height }}px;
+            "
+        >
+            <div class="week-corner"></div>
+
+            {% for day in week_days %}
+            <div class="week-day-heading">
+                <span class="week-day-name">
+                    {{ day.date.strftime("%a") }}
+                </span>
+
+                <span
+                    class="
+                        week-day-number
+                        {% if day.date == today %}
+                            week-day-number-current
+                        {% endif %}
+                    "
+                >
+                    {{ day.date.day }}
+                </span>
+            </div>
+            {% endfor %}
+
+            <div class="all-day-label">All day</div>
+
+            {% for day in week_days %}
+            <div class="all-day-column">
+                {% for task in day.all_day_tasks %}
+                <a
+                    class="week-all-day-task"
+                    style="background-color: {{ task['color'] }}"
+                    href="{{ url_for(
+                        'edit_task_action',
+                        calendar_id=calendar_id,
+                        year=day.date.year,
+                        month=day.date.month,
+                        day=day.date.day,
+                        task_id=task['id']
+                    ) }}"
+                >
+                    {{ task["title"] }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endfor %}
+
+            <div class="time-scale">
+                {% for hour in hours %}
+                <div
+                    class="time-label"
+                    style="height: var(--hour-height)"
+                >
+                    <span>{{ "%02d:00"|format(hour) }}</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% for day in week_days %}
+            <div
+                class="week-day-column"
+                style="height: var(--grid-height)"
+                data-date="{{ day.date_key }}"
+            >
+                {% for hour in hours %}
+                <div
+                    class="week-hour-line"
+                    style="
+                        top:
+                        {{ (hour - start_hour) * hour_height }}px;
+                    "
+                ></div>
+                {% endfor %}
+
+                {% for task in day.timed_tasks %}
+                <a
+                    class="week-task"
+                    style="
+                        top: {{ task['top'] }}px;
+                        height: {{ task['height'] }}px;
+                        background-color: {{ task['color'] }};
+                    "
+                    href="{{ url_for(
+                        'edit_task_action',
+                        calendar_id=calendar_id,
+                        year=day.date.year,
+                        month=day.date.month,
+                        day=day.date.day,
+                        task_id=task['id']
+                    ) }}"
+                    title="
+                        {{ task['start_time'] }}
+                        -
+                        {{ task['end_time'] }}:
+                        {{ task['title'] }}
+                    "
+                >
+                    <span class="week-task-time">
+                        {{ task["start_time"] }}
+
+                        {% if task["end_time"] != task["start_time"] %}
+                        &ndash; {{ task["end_time"] }}
+                        {% endif %}
+                    </span>
+
+                    <span class="week-task-title">
+                        {{ task["title"] }}
+                    </span>
+
+                    {% if task["details"]|trim %}
+                    <span class="week-task-details">
+                        {{ task["details"]
+                            |task_details_for_markup
+                            |safe }}
+                    </span>
+                    {% endif %}
+                </a>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>

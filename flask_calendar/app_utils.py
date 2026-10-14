@@ -1,7 +1,8 @@
 import re
 import uuid
 from functools import wraps
-from typing import Any, Callable
+from datetime import date, datetime, timedelta
+from typing import Any, Callable, Dict, List, Optional
 
 from cachelib.simple import SimpleCache
 from flask import abort, current_app, redirect, request
@@ -93,3 +94,133 @@ def task_details_for_markup(details: str) -> str:
             decorated_fragments.append(fragment)
 
     return "".join(decorated_fragments)
+
+def parse_iso_date(value: Optional[str], default: date) -> date:
+    """Parse YYYY-MM-DD, returning the supplied default when invalid."""
+    if value is None:
+        return default
+
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        return default
+
+
+def start_of_week(value: date, first_weekday: int) -> date:
+    """Return the first date of the week containing value."""
+    days_since_week_start = (value.weekday() - first_weekday) % 7
+    return value - timedelta(days=days_since_week_start)
+
+
+def time_to_minutes(value: str) -> int:
+    """Convert an HH:MM value to minutes after midnight."""
+    try:
+        parsed_time = datetime.strptime(value, "%H:%M").time()
+    except (TypeError, ValueError):
+        return 0
+
+    return parsed_time.hour * 60 + parsed_time.minute
+
+
+def prepare_week_task(
+    task: Dict,
+    start_hour: int,
+    end_hour: int,
+    hour_height: int,
+    minimum_task_minutes: int,
+) -> Optional[Dict]:
+    """
+    Add pixel positioning information to a timed task.
+
+    Tasks completely outside the visible range are omitted.
+    """
+    if task.get("is_all_day", False):
+        return dict(task)
+
+    visible_start = start_hour * 60
+    visible_end = end_hour * 60
+
+    task_start = time_to_minutes(task.get("start_time", "00:00"))
+    task_end = time_to_minutes(
+        task.get("end_time") or task.get("start_time", "00:00")
+    )
+
+    # Treat an end time before the start as passing midnight.
+    if task_end < task_start:
+        task_end = 24 * 60
+
+    if task_end == task_start:
+        task_end += minimum_task_minutes
+
+    clipped_start = max(task_start, visible_start)
+    clipped_end = min(task_end, visible_end)
+
+    if clipped_end <= clipped_start:
+        return None
+
+    pixels_per_minute = hour_height / 60
+    prepared_task = dict(task)
+    prepared_task["top"] = (
+        clipped_start - visible_start
+    ) * pixels_per_minute
+    prepared_task["height"] = max(
+        (clipped_end - clipped_start) * pixels_per_minute,
+        20,
+    )
+
+    return prepared_task
+
+
+def prepare_week_days(
+    week_start: date,
+    tasks: Dict[str, List[Dict]],
+    start_hour: int,
+    end_hour: int,
+    hour_height: int,
+    minimum_task_minutes: int,
+) -> List[Dict]:
+    """Build the seven day-column objects used by the weekly template."""
+    days: List[Dict] = []
+
+    for offset in range(7):
+        day_date = week_start + timedelta(days=offset)
+        day_tasks = tasks.get(day_date.isoformat(), [])
+
+        all_day_tasks = [
+            dict(task)
+            for task in day_tasks
+            if task.get("is_all_day", False)
+        ]
+
+        timed_tasks = []
+        for task in day_tasks:
+            if task.get("is_all_day", False):
+                continue
+
+            prepared_task = prepare_week_task(
+                task=task,
+                start_hour=start_hour,
+                end_hour=end_hour,
+                hour_height=hour_height,
+                minimum_task_minutes=minimum_task_minutes,
+            )
+
+            if prepared_task is not None:
+                timed_tasks.append(prepared_task)
+
+        timed_tasks.sort(
+            key=lambda task: time_to_minutes(
+                task.get("start_time", "00:00")
+            )
+        )
+
+        days.append(
+            {
+                "date": day_date,
+                "date_key": day_date.isoformat(),
+                "all_day_tasks": all_day_tasks,
+                "timed_tasks": timed_tasks,
+            }
+        )
+
+    return days

@@ -2,7 +2,7 @@ import json
 import os
 import random
 import time
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from typing import Dict, List, Optional, cast
 
 from flask import current_app
@@ -103,6 +103,47 @@ class CalendarData:
                 tasks[month_str] = data[KEY_TASKS][KEY_NORMAL_TASK][year_str][month_str]
 
         return tasks
+
+    def tasks_for_date(self, task_date: date, data: Dict) -> List[Dict]:
+        """Return normal and recurring tasks for one calendar date."""
+        year_str = str(task_date.year)
+        month_str = str(task_date.month)
+        day_str = str(task_date.day)
+
+        normal_tasks = (
+            data.get(KEY_TASKS, {})
+            .get(KEY_NORMAL_TASK, {})
+            .get(year_str, {})
+            .get(month_str, {})
+            .get(day_str, [])
+        )
+
+        recurring_tasks = self._repetitive_tasks_from_calendar(
+            task_date.year,
+            task_date.month,
+            data,
+        )
+
+        day_recurring_tasks = recurring_tasks.get(month_str, {}).get(day_str, [])
+
+        # Return copies because view-specific values will be added later.
+        return [
+            dict(task)
+            for task in normal_tasks + day_recurring_tasks
+        ]
+
+    def tasks_for_week(self, week_start: date, data: Dict) -> Dict[str, List[Dict]]:
+        """Return tasks grouped by ISO date for seven consecutive days."""
+        week_tasks: Dict[str, List[Dict]] = {}
+
+        for offset in range(7):
+            task_date = week_start + timedelta(days=offset)
+            week_tasks[task_date.isoformat()] = self.tasks_for_date(
+                task_date,
+                data,
+            )
+
+        return week_tasks
 
     def hide_past_tasks(self, year: int, month: int, tasks: Dict) -> None:
         (

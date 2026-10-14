@@ -21,6 +21,14 @@
         <div class="current-date">
             {{ month_name }} {{ year }}
         </div>
+        <a
+            class="view-link"
+            href="{{ url_for(
+                'weekly_calendar_action',
+                calendar_id=calendar_id) }}"
+        >
+        Week
+        </a>
         {% if month != current_month or year != current_year %}
             <div class="back-to-current">
                 <a href="/{{ calendar_id }}/">back to current</a>
@@ -29,6 +37,7 @@
         {% if display_view_past_button %}
             <input id="toggle-past-events" class="toggle-past-events" type="button" value="View Past" onclick="ToggleViewPastTasks();" />
         {% endif %}
+         <input id="enter-settings" class="enter-settings" type="button" value="Settings" onclick="window.location='/{{ calendar_id }}/settings'" />
     </div>
 
     <ul class="calendar-header">
@@ -194,6 +203,10 @@
         expirationDate.setTime(expirationDate.getTime() + 31536000000);
         document.cookie = "ViewPastTasks=" + (currentSetting ? "0" : "1") +
                           "; expires=" + expirationDate.toUTCString() + "; path=/";
+        location.reload();
+    };
+
+    function EnterSettings() {
         location.reload();
     };
 
