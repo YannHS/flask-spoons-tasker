@@ -1,6 +1,7 @@
-[![CircleCI](https://circleci.com/gh/Kartones/flask-calendar/tree/master.svg?style=svg)](https://circleci.com/gh/Kartones/flask-calendar/tree/master)
 
-# flask-calendar
+
+# flask-spoons-tasker
+This is a fork of https://github.com/Kartones/flask-calendar that is adapted for implementing the 5 spoons energy theory for helping people with limited energies plan their week.
 
 ## Introduction
 
